@@ -1,4 +1,4 @@
-{% extends "@AppBundle/layout.html.twig" %}
+{% extends "AppBundle::layout.html.twig" %}
 {% trans_default_domain 'FOSUserBundle' %}
 {% block fos_user_content %}
 eee
@@ -19,6 +19,7 @@ eee
                     <br>
                        <label for="password">{{ 'security.login.password'|trans }}</label>
                        <input class="form-control" type="password" id="password" name="_password" required="required" />
+                           <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
                     <div>
                         <br>
                         <center><input class="btn btn-success" type="submit" id="_submit" name="_submit" value="{{ 'security.login.submit'|trans }}" /></center>

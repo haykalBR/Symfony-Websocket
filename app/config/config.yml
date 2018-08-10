@@ -34,6 +34,7 @@ framework:
     php_errors:
         log: true
 
+
 # Twig Configuration
 twig:
     debug: '%kernel.debug%'
@@ -87,4 +88,12 @@ gos_web_socket:
         router:
             resources: ['@HchatBundle/Resources/config/pubsub/routing.yml']
     topics: ['@acme_hello.topic_sample_service']
-
+#All Service FOSUSERBUNDLE
+services:
+    fos_user.security.controller:
+      class: AppBundle\Controller\SecurityController
+    fos_user.profile.controller:
+      class: AppBundle\Controller\ProfileController
+      arguments: ['@fos_user.user_manager']
+    fos_user.registration.controller:
+      class: AppBundle\Controller\RegistrationController
