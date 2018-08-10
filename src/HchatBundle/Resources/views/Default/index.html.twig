@@ -1,0 +1,86 @@
+
+{% extends 'base.html.twig' %}
+{% block body %}
+    {{ app.user.id }}
+    <div class="row">
+    <div class="col-sm-2"></div>
+    <div class="col-sm-4 offset-sm-4">
+            <div class="list-group">
+                {% for user in users  %}
+                 {% if user.id != app.user.id %}
+                     <li class="list-group-item">
+                         <span  class="fa fa-thumbs-up env " aria-hidden="true" data-id="{{ user.id }}"  style="font-size:36px;color:dodgerblue;float: right;margin-top: -10px"></span>
+                         <div id="badge{{ user.id }}" class="badge" style="float: left">2</div>
+                         &nbsp;&nbsp;{{ user.username  }}
+                     </li>
+
+                 {% endif %}
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $( document ).ready(function() {
+            var _WS_URI = "ws://{{ gos_web_socket_server_host }}:{{ gos_web_socket_server_port }}";
+            var webSocket = WS.connect(_WS_URI);
+            var idtransmitter={{ app.user.id }};
+            webSocket.on("socket/connect", function(session){
+              /*  session.unsubscribe("acme/channel/"+idtransmitter, function(topic){
+                    console.log("This is a "+topic);
+                });*/
+               session.subscribe("acme/channel/"+idtransmitter, function(uri, payload){
+
+                   indexOfSeparator=payload.msg.lastIndexOf("{**}");
+                   who = payload.msg.substring(indexOfSeparator-1, payload.msg.length);
+                   who=who.split("{**}");
+                   console.log(who);
+                   if (who[1]!={{ app.user.id }})
+                   {
+                       if (who[0]=="r")
+                        {
+                            var count=parseInt($("#badge"+who[1]).text())+1;
+                            $("#badge"+who[1]).text(count);
+                            toastr.info("vous avez un nouveau Notifcation",'', {
+                                "closeButton": true,
+                                "debug": false,
+                                "newestOnTop": true,
+                                "progressBar": true,
+                                "positionClass": "toast-top-center",
+                                "preventDuplicates": true,
+                                "onclick": null,
+                                "showDuration": "300",
+                                "hideDuration": "1000",
+                                "timeOut": "5000",
+                                "extendedTimeOut": "1000",
+                                "showEasing": "swing",
+                                "hideEasing": "linear",
+                                "showMethod": "fadeIn",
+                                "hideMethod": "fadeOut"
+                            });
+                        }
+                   }
+               });
+                $('.env').click(function () {
+                    var idreceiver=$(this).attr("data-id");
+                    var msg='notif';
+                    session.publish("acme/channel/" + idreceiver, msg + "r{**}" +{{ app.user.id }} );
+                    session.publish("acme/channel/" +{{ app.user.id }}, msg + "t{**}" + idreceiver);
+                   /* $.ajax({
+                        type:'GET',
+                        url: Routing.generate('Sent_Notif', {idreceiver:idreceiver}),
+                        success:function(data){
+                        }
+                    });*/
+
+
+                })
+            })
+
+            webSocket.on("socket/disconnect", function(error){
+                console.log("Disconnected for " + error.reason + " with code " + error.code);
+            })
+
+        });
+    </script>
+{% endblock %}
