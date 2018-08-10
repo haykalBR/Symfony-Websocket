@@ -58,14 +58,7 @@ class AcmeTopic implements TopicInterface
      */
     public function onPublish(ConnectionInterface $connection, Topic $topic, WampRequest $request, $event, array $exclude, array $eligible)
     {
- 
-        /*
-        	$topic->getId() will contain the FULL requested uri, so you can proceed based on that
-
-            if ($topic->getId() === 'acme/channel/shout')
-     	       //shout something to all subs.
-        */
-
+         dump($request->getMatched());
         $topic->broadcast([
             'msg' => $event,
         ]);

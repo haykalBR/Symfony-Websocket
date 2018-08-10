@@ -26,11 +26,9 @@
             var idtransmitter={{ app.user.id }};
             webSocket.on("socket/connect", function(session){
                session.subscribe("acme/channel/"+idtransmitter, function(uri, payload){
-
                    indexOfSeparator=payload.msg.lastIndexOf("{**}");
                    who = payload.msg.substring(indexOfSeparator-1, payload.msg.length);
                    who=who.split("{**}");
-
                    if (who[1]!={{ app.user.id }})
                    {
                        if (who[0]=="r")
@@ -58,18 +56,15 @@
                    }
                });
                 $('.env').click(function () {
-
                     var idreceiver=$(this).attr("data-id");
-                    session.publish("acme/channel/" + idreceiver,"r{**}" +{{ app.user.id }} );
                     session.publish("acme/channel/" +{{ app.user.id }},"t{**}" + idreceiver);
+                    session.publish("acme/channel/" + idreceiver,"r{**}" +{{ app.user.id }} );
                     $.ajax({
                         type:'GET',
                         url: Routing.generate('Sent_Notif', {idreceiver:idreceiver}),
                         success:function(data){
                         }
                     });
-
-
                 })
             })
             webSocket.on("socket/disconnect", function(error){
