@@ -14,11 +14,10 @@ class DefaultController extends Controller
      */
     public function indexAction()
     {
-        //Get All users
-        $users=$this->getDoctrine()->getRepository("AppBundle:User")->createQueryBuilder("e")->getQuery()->getResult();
+        $em=$this->getDoctrine();
+        $users=$em->getRepository("AppBundle:User")->createQueryBuilder("e")->getQuery()->getResult();
         return $this->render('HchatBundle:Default:index.html.twig',array('users'=>$users));
     }
-
      /**
      *
      * @Route("/SentNotif/{idreceiver}", name="Sent_Notif", options={"expose"=true})
