@@ -35,3 +35,7 @@ services:
     #         $someArgument: 'some_value'
     acme_hello.topic_sample_service:
             class: HchatBundle\Topic\AcmeTopic
+            arguments: [ "@doctrine.orm.entity_manager"]
+    chat_service:
+            class: HchatBundle\Topic\ChatTopic
+            arguments: [ "@doctrine.orm.entity_manager"]

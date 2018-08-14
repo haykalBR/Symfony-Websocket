@@ -10,6 +10,7 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link href="{{asset('toastr/toastr.css')}}" rel="stylesheet">
+        <link href="{{asset('bundles/chat.css')}}" rel="stylesheet">
 
     </head>
     <body>
@@ -21,6 +22,7 @@
             </div>
             <ul class="nav navbar-nav">
                 <li class="active"><a href="{{ path('hchat_default_index') }}">Home</a></li>
+                <li class="active"><a href="{{ path('chat_index') }}">Chat</a></li>
             </ul>
 
         <ul class="nav navbar-nav navbar-right">
@@ -34,6 +36,9 @@
     <script src="{{asset('toastr/toastr.min.js')}}"></script>
     <script src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
     <script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
+    <script src="{{asset('bundles/chat.js')}}"></script>
+    {#<script src="https://use.fontawesome.com/45e03a14ce.js"></script>#}
+
 
     {% block body %}{% endblock %}
         {% block javascripts %}{% endblock %}

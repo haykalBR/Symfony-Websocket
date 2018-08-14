@@ -25,46 +25,33 @@
             var webSocket = WS.connect(_WS_URI);
             var idtransmitter={{ app.user.id }};
             webSocket.on("socket/connect", function(session){
+
                session.subscribe("acme/channel/"+idtransmitter, function(uri, payload){
-                   indexOfSeparator=payload.msg.lastIndexOf("{**}");
-                   who = payload.msg.substring(indexOfSeparator-1, payload.msg.length);
-                   who=who.split("{**}");
-                   if (who[1]!={{ app.user.id }})
-                   {
-                       if (who[0]=="r")
-                        {
-                            var count=parseInt($("#badge"+who[1]).text())+1;
-                            $("#badge"+who[1]).text(count);
-                            toastr.info("vous avez un nouveau Notifcation",'', {
-                                "closeButton": true,
-                                "debug": false,
-                                "newestOnTop": true,
-                                "progressBar": true,
-                                "positionClass": "toast-top-center",
-                                "preventDuplicates": true,
-                                "onclick": null,
-                                "showDuration": "300",
-                                "hideDuration": "1000",
-                                "timeOut": "5000",
-                                "extendedTimeOut": "1000",
-                                "showEasing": "swing",
-                                "hideEasing": "linear",
-                                "showMethod": "fadeIn",
-                                "hideMethod": "fadeOut"
-                            });
-                        }
-                   }
+                        var receiver=payload.msg.receiver;
+                    if(idtransmitter == receiver){
+                      toastr.info("vous avez un nouveau Notifcation",'', {
+                           "closeButton": true,
+                           "debug": false,
+                           "newestOnTop": true,
+                           "progressBar": true,
+                           "positionClass": "toast-top-center",
+                           "preventDuplicates": true,
+                           "onclick": null,
+                           "showDuration": "300",
+                           "hideDuration": "1000",
+                           "timeOut": "5000",
+                           "extendedTimeOut": "1000",
+                           "showEasing": "swing",
+                           "hideEasing": "linear",
+                           "showMethod": "fadeIn",
+                           "hideMethod": "fadeOut"
+                       });
+                    }
                });
                 $('.env').click(function () {
                     var idreceiver=$(this).attr("data-id");
-                    session.publish("acme/channel/" +{{ app.user.id }},"t{**}" + idreceiver);
-                    session.publish("acme/channel/" + idreceiver,"r{**}" +{{ app.user.id }} );
-                    $.ajax({
-                        type:'GET',
-                        url: Routing.generate('Sent_Notif', {idreceiver:idreceiver}),
-                        success:function(data){
-                        }
-                    });
+                    var notif = {transmitter:idtransmitter, receiver:parseInt(idreceiver)};
+                    session.publish("acme/channel/" + idreceiver,notif );
                 })
             })
             webSocket.on("socket/disconnect", function(error){

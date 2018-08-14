@@ -5,6 +5,7 @@ namespace HchatBundle\Topic;
 use Gos\Bundle\WebSocketBundle\Topic\TopicInterface;
 use Gos\Bundle\WebSocketBundle\Topic\TopicPeriodicTimer;
 use Gos\Bundle\WebSocketBundle\Topic\TopicPeriodicTimerInterface;
+use HchatBundle\Entity\Chat;
 use HchatBundle\Entity\Notification;
 use Ratchet\ConnectionInterface;
 use Ratchet\Wamp\Topic;
@@ -12,8 +13,8 @@ use Gos\Bundle\WebSocketBundle\Router\WampRequest;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Doctrine\ORM\EntityManager;
 
-class AcmeTopic implements TopicInterface
-   {
+class ChatTopic implements TopicInterface
+{
 
 
     public function __construct(EntityManager $entityManager) {
@@ -63,17 +64,22 @@ class AcmeTopic implements TopicInterface
      */
     public function onPublish(ConnectionInterface $connection, Topic $topic, WampRequest $request, $event, array $exclude, array $eligible)
     {
-
-            $trans=$event['transmitter'];
-            $rece=$event['receiver'];
+        $trans=$event['Transmitter'];
+        $rece=$event['Receiver'];
+        $message=$event['Message'];
+        $type=$event['Type'];
+        if ($type == "message")
+        {
             $em = $this->em;
             $receiver=$em->getRepository("AppBundle:User")->find($rece);
             $transmitter=$em->getRepository("AppBundle:User")->find($trans);
-            $notfcation=new Notification();
-            $notfcation->setTransmitter($transmitter);
-            $notfcation->setReceiver($receiver);
-            $em->persist($notfcation);
+            $chat=new Chat();
+            $chat->setReceiver($receiver);
+            $chat->setTransmitter($transmitter);
+            $chat->setMessage($message);
+            $em->persist($chat);
             $em->flush();
+        }
         $topic->broadcast([
             'msg' => $event,
         ]);
@@ -85,6 +91,6 @@ class AcmeTopic implements TopicInterface
      */
     public function getName()
     {
-        return 'acme.topic';
+        return 'chat.topic';
     }
 }

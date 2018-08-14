@@ -87,7 +87,7 @@ gos_web_socket:
         host: 192.168.1.57  #The host ip to bind to
         router:
             resources: ['@HchatBundle/Resources/config/pubsub/routing.yml']
-    topics: ['@acme_hello.topic_sample_service']
+    topics: ['@acme_hello.topic_sample_service','@chat_service']
 #All Service FOSUSERBUNDLE
 services:
     fos_user.security.controller:

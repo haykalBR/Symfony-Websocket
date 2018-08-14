@@ -1,0 +1,180 @@
+
+{% extends 'base.html.twig' %}
+{% block body %}
+    {{ app.user.id }}
+    <div class="row">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-10" >
+            <div class="main_section">
+                <div class="container" style=" width: 1638px;">
+                    <div class="chat_container">
+                        <div class="col-sm-3 chat_sidebar">
+                            <div class="row">
+                                <div id="custom-search-input">
+                                    <div class="input-group col-md-12">
+                                        <input type="text" class="  search-query form-control" placeholder="Conversation" />
+                                        <button class="btn btn-danger" type="button">
+                                            <span class=" glyphicon glyphicon-search"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="dropdown all_conversation">
+                                    <button class="dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fa fa-weixin" aria-hidden="true"></i>
+                                        All Conversations
+                                    </button>
+
+                                </div>
+                                <div class="member_list">
+                                    <ul class="list-unstyled">
+                                        <input type="hidden" id="id-hidden">
+                                        {%  for user in users  %}
+                                            {% if app.user.id != user.id %}
+                                        <li class="left clearfix chat-select"  data-id="{{ user.id }}">
+                     <span class="chat-img pull-left">
+                     <img src="https://lh6.googleusercontent.com/-y-MY2satK-E/AAAAAAAAAAI/AAAAAAAAAJU/ER_hFddBheQ/photo.jpg" alt="User Avatar" class="img-circle">
+                     </span>
+                                            <div class="chat-body clearfix">
+                                                <div class="header_sec" >
+                                                    <strong class="primary-font">{{ user.username }}</strong> <strong class="pull-right">
+                                                        09:02AM</strong>
+                                                </div>
+                                                <div class="contact_sec">
+                                                   <span class="badge pull-right">3</span>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        {% endif %}
+                                       {% endfor %}
+                                        </ul>
+                                </div></div>
+                        </div>
+                        <!--chat_sidebar-->
+                        <div class="col-sm-9 message_section">
+                            <center><img src="{{ asset('bundles/loader.gif')}}" id="loader" style="display: none"></center>
+                            <div class="row">
+                                <div class="chat_area">
+                                    <ul class="list-unstyled">
+                                        <div id="result"></div>
+
+                                        <div id="typing" style="display: none"><img src="{{ asset('bundles/typing.gif')}}" id="loader" style="width:10%"></div>
+                                    </ul>
+                                </div><!--chat_area-->
+                                <div class="message_write">
+                                    <textarea class="form-control" placeholder="type a message" id="content-msg"></textarea>
+                                    <div class="clearfix"></div>
+                                    <br><br>
+                                        <a href="#" class="pull-right btn btn-success"  >Send</a></div>
+                                </div>
+                            </div>
+                        </div> <!--message_section-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $("#document").ready(function () {
+            //Decalre user Curent and WebSocket Variable
+            var _WS_URI = "ws://{{ gos_web_socket_server_host }}:{{ gos_web_socket_server_port }}";
+            var webSocket = WS.connect(_WS_URI);
+            var idtransmitter={{ app.user.id }};
+            //Get Message of user select
+            $('.chat-select').click(function () {
+                var idreceiver=parseInt($(this).attr("data-id"));
+                $('#id-hidden').val(idreceiver);
+                $.ajax({
+                    url: Routing.generate('Get_message', {id: idreceiver}),
+                    beforeSend: function()
+                    {
+
+                        $("#loader").show();
+                        setTimeout(function () {
+                            $("#loader").hide();
+
+
+                        },500);
+                    },
+                    success: function (data) {
+                        $("#result").html("");
+                        data=JSON.parse(data);
+                        $.each(data,function (index, element) {
+                            if(element.id=={{ app.user.id }}){
+                               var frameTrans="<li class='left clearfix admin_chat'><span class='chat-img1 pull-left'><img src='https://lh6.googleusercontent.com/-y-MY2satK-E/AAAAAAAAAAI/AAAAAAAAAJU/ER_hFddBheQ/photo.jpg' alt='User Avatar' class='img-circle'>";
+                                frameTrans=frameTrans+"</span><div class='chat-body1 clearfix'><p>"+element.message+"</p>";
+                                frameTrans=frameTrans+"<div class='chat_time pull-right'>"+ formatDate(new Date(element.creationDate)) +"</div></div></li>";
+                            }else{
+                                frameTrans="<li class='left clearfix'><span class='chat-img1 pull-right'><img src='https://lh6.googleusercontent.com/-y-MY2satK-E/AAAAAAAAAAI/AAAAAAAAAJU/ER_hFddBheQ/photo.jpg' alt='User Avatar' class='img-circle'>";
+                                frameTrans=frameTrans+"</span><div class='chat-body1 clearfix'><p>"+element.message+"</p>";
+                                frameTrans=frameTrans+"<div class='chat_time pull-right'>"+ formatDate(new Date(element.creationDate)) +"</div></div></li>";
+                            }
+                            $("#result").append(frameTrans);
+
+                        });
+                    }
+                });
+
+            })
+            //set Message and save in database
+            webSocket.on("socket/connect", function(session){
+                session.subscribe("chat/message/"+idtransmitter, function(uri, payload){
+                   if (payload.msg.Message!=null){
+                       var frameTrans="<li class='left clearfix'><span class='chat-img1 pull-right'><img src='https://lh6.googleusercontent.com/-y-MY2satK-E/AAAAAAAAAAI/AAAAAAAAAJU/ER_hFddBheQ/photo.jpg' alt='User Avatar' class='img-circle'>";
+                       frameTrans=frameTrans+"</span><div class='chat-body1 clearfix'><p>"+payload.msg.Message+"</p>";
+                       frameTrans=frameTrans+"<div class='chat_time pull-right'>date</div></div></li>";
+                       $("#result").append(frameTrans);
+                   }
+
+                });
+                session.subscribe("chat/typing/"+idtransmitter, function(uri, payload){
+                  if (typeof payload.msg.Message !="undefined"){
+                      console.log(idtransmitter);
+                      console.log(payload.msg.Receiver);
+                      if (idtransmitter != payload.msg.Transmitter){
+                          if(payload.msg.Message.length >=0){
+                              $("#typing").show();
+                          }else {
+                              $("#typing").hide();
+                          }
+                      }
+                  }
+
+
+                    {#setTimeout(function(){#}
+                        {#var frameTrans="<li class='left clearfix'><span class='chat-img1 pull-right'><img src='https://lh6.googleusercontent.com/-y-MY2satK-E/AAAAAAAAAAI/AAAAAAAAAJU/ER_hFddBheQ/photo.jpg' alt='User Avatar' class='img-circle'>";#}
+                        {#frameTrans=frameTrans+"</span><div class='chat-body1 clearfix'><img src='{{ asset("bundles/typing.gif")}}' style='width:10%'></p>";#}
+                        {#frameTrans=frameTrans+"</li>";#}
+                        {#$("#result").append(frameTrans);#}
+                    {#}, 2000);#}
+
+
+                });
+                //Sent Message
+             $('.btn-success').click(function () {
+                 var idreceiver=parseInt($('#id-hidden').val());
+                 var msg=$("#content-msg").val();
+                 var message={"Type":"message","Transmitter":idtransmitter,"Receiver":idreceiver,"Message":msg,}
+                 session.publish("chat/message/"+idreceiver,message );
+                 $("#content-msg").val('');
+             })
+                $('#content-msg').keypress(function(event) {
+                    var msg=$("#content-msg").val();
+                    var idreceiver=parseInt($('#id-hidden').val());
+                    var message={"Type":"message","Transmitter":idtransmitter,"Receiver":idreceiver,"Message":msg,}
+                    session.publish("chat/typing/"+idreceiver,message );
+                    if (event.keyCode == 13) {
+
+
+
+                        session.publish("chat/message/"+idreceiver,message );
+                        $("#content-msg").val('');
+                    }
+                });
+
+             //
+
+
+            });
+        })
+    </script>
+{% endblock %}
