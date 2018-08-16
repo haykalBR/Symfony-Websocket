@@ -1,15 +1,14 @@
 
 {% extends 'base.html.twig' %}
 {% block body %}
-    {{ app.user.id }}
     <div class="row">
-        <div class="col-sm-1"></div>
+        {#<div class="col-sm-1"></div>#}
         <div class="col-sm-10" >
             <div class="main_section">
                 <div class="container" style=" width: 1638px;">
                     <div class="chat_container">
                         <div class="col-sm-3 chat_sidebar">
-                            <div class="row">
+                            <div class="row" style="margin-left: -25px;margin-right: 131px">
                                 <div id="custom-search-input">
                                     <div class="input-group col-md-12">
                                         <input type="text" class="  search-query form-control" placeholder="Conversation" />
@@ -23,9 +22,8 @@
                                         <i class="fa fa-weixin" aria-hidden="true"></i>
                                         All Conversations
                                     </button>
-
                                 </div>
-                                <div class="member_list">
+                                <div class="member_list" style="">
                                     <ul class="list-unstyled">
                                         <input type="hidden" id="id-hidden">
                                         {%  for user in users  %}
@@ -51,16 +49,20 @@
                         </div>
                         <!--chat_sidebar-->
                         <div class="col-sm-9 message_section">
-                            <center><img src="{{ asset('bundles/loader.gif')}}" id="loader" style="display: none"></center>
+
+                            <center><div id="loader"></div></center>
                             <div class="row">
-                                <div class="chat_area">
+                                <div class="chat_area" style=" height: 660px">
                                     <ul class="list-unstyled">
                                         <div id="result"></div>
 
-                                        <div id="typing" style="display: none"><img src="{{ asset('bundles/typing.gif')}}" id="loader" style="width:10%"></div>
+
                                     </ul>
+
                                 </div><!--chat_area-->
                                 <div class="message_write">
+                                    <div id="typing{{ app.user.id }}" style="bottom: 0;position: fixed;margin-left:30px;margin-bottom: 110px;"></div>
+                                   <br><br><br>
                                     <textarea class="form-control" placeholder="type a message" id="content-msg"></textarea>
                                     <div class="clearfix"></div>
                                     <br><br>
@@ -75,6 +77,7 @@
     </div>
     <script type="text/javascript">
         $("#document").ready(function () {
+
             //Decalre user Curent and WebSocket Variable
             var _WS_URI = "ws://{{ gos_web_socket_server_host }}:{{ gos_web_socket_server_port }}";
             var webSocket = WS.connect(_WS_URI);
@@ -87,13 +90,12 @@
                     url: Routing.generate('Get_message', {id: idreceiver}),
                     beforeSend: function()
                     {
-
-                        $("#loader").show();
+                        $("#result").html("");
+                        $("#loader").html("<div class='loader'></div>");
                         setTimeout(function () {
-                            $("#loader").hide();
+                            $("#loader").html("");
 
-
-                        },500);
+                        },50);
                     },
                     success: function (data) {
                         $("#result").html("");
@@ -101,18 +103,18 @@
                         $.each(data,function (index, element) {
                             if(element.id=={{ app.user.id }}){
                                var frameTrans="<li class='left clearfix admin_chat'><span class='chat-img1 pull-left'><img src='https://lh6.googleusercontent.com/-y-MY2satK-E/AAAAAAAAAAI/AAAAAAAAAJU/ER_hFddBheQ/photo.jpg' alt='User Avatar' class='img-circle'>";
-                                frameTrans=frameTrans+"</span><div class='chat-body1 clearfix'><p>"+element.message+"</p>";
+                                frameTrans=frameTrans+"</span><div class='chat-body1 clearfix'><p style='margin-left: 50px'>"+element.message+"</p>";
                                 frameTrans=frameTrans+"<div class='chat_time pull-right'>"+ formatDate(new Date(element.creationDate)) +"</div></div></li>";
                             }else{
                                 frameTrans="<li class='left clearfix'><span class='chat-img1 pull-right'><img src='https://lh6.googleusercontent.com/-y-MY2satK-E/AAAAAAAAAAI/AAAAAAAAAJU/ER_hFddBheQ/photo.jpg' alt='User Avatar' class='img-circle'>";
-                                frameTrans=frameTrans+"</span><div class='chat-body1 clearfix'><p>"+element.message+"</p>";
+                                frameTrans=frameTrans+"</span><div class='chat-body1 clearfix'><p style='margin-left: 50px'>"+element.message+"</p>";
                                 frameTrans=frameTrans+"<div class='chat_time pull-right'>"+ formatDate(new Date(element.creationDate)) +"</div></div></li>";
                             }
                             $("#result").append(frameTrans);
 
                         });
                     }
-                });
+                },1000);
 
             })
             //set Message and save in database
@@ -120,59 +122,58 @@
                 session.subscribe("chat/message/"+idtransmitter, function(uri, payload){
                    if (payload.msg.Message!=null){
                        var frameTrans="<li class='left clearfix'><span class='chat-img1 pull-right'><img src='https://lh6.googleusercontent.com/-y-MY2satK-E/AAAAAAAAAAI/AAAAAAAAAJU/ER_hFddBheQ/photo.jpg' alt='User Avatar' class='img-circle'>";
-                       frameTrans=frameTrans+"</span><div class='chat-body1 clearfix'><p>"+payload.msg.Message+"</p>";
+                       frameTrans=frameTrans+"</span><div class='chat-body1 clearfix'><p style='margin-left: 50px'>"+payload.msg.Message+"</p>";
                        frameTrans=frameTrans+"<div class='chat_time pull-right'>date</div></div></li>";
                        $("#result").append(frameTrans);
                    }
-
                 });
                 session.subscribe("chat/typing/"+idtransmitter, function(uri, payload){
                   if (typeof payload.msg.Message !="undefined"){
-                      console.log(idtransmitter);
-                      console.log(payload.msg.Receiver);
-                      if (idtransmitter != payload.msg.Transmitter){
-                          if(payload.msg.Message.length >=0){
-                              $("#typing").show();
-                          }else {
-                              $("#typing").hide();
-                          }
-                      }
+                  $('#typing'+payload.msg.Receiver).append("<div class='loader-c'></div>");
+                      setTimeout(function() {
+                        $("#typing"+payload.msg.Receiver).text(" ")
+                      },2000);
                   }
-
-
-                    {#setTimeout(function(){#}
-                        {#var frameTrans="<li class='left clearfix'><span class='chat-img1 pull-right'><img src='https://lh6.googleusercontent.com/-y-MY2satK-E/AAAAAAAAAAI/AAAAAAAAAJU/ER_hFddBheQ/photo.jpg' alt='User Avatar' class='img-circle'>";#}
-                        {#frameTrans=frameTrans+"</span><div class='chat-body1 clearfix'><img src='{{ asset("bundles/typing.gif")}}' style='width:10%'></p>";#}
-                        {#frameTrans=frameTrans+"</li>";#}
-                        {#$("#result").append(frameTrans);#}
-                    {#}, 2000);#}
-
-
                 });
                 //Sent Message
              $('.btn-success').click(function () {
                  var idreceiver=parseInt($('#id-hidden').val());
                  var msg=$("#content-msg").val();
                  var message={"Type":"message","Transmitter":idtransmitter,"Receiver":idreceiver,"Message":msg,}
-                 session.publish("chat/message/"+idreceiver,message );
-                 $("#content-msg").val('');
+                 if ($.trim(msg.replace(/(\r\n|\n|\r)/gm,""))!= ""){
+                     session.publish("chat/message/"+idreceiver,message );
+                     $("#content-msg").val('');
+                     var frameTrans="<li class='left clearfix admin_chat'><span class='chat-img1 pull-left'><img src='https://lh6.googleusercontent.com/-y-MY2satK-E/AAAAAAAAAAI/AAAAAAAAAJU/ER_hFddBheQ/photo.jpg' alt='User Avatar' class='img-circle'>";
+                     frameTrans=frameTrans+"</span><div class='chat-body1 clearfix'><p style='margin-left: 50px'>"+msg+"</p>";
+                     frameTrans=frameTrans+"<div class='chat_time pull-right'></div></div></li>";
+                     $("#result").append(frameTrans);
+
+
+                 }
+
              })
-                $('#content-msg').keypress(function(event) {
+             $('#content-msg').keypress(function(event) {
                     var msg=$("#content-msg").val();
                     var idreceiver=parseInt($('#id-hidden').val());
-                    var message={"Type":"message","Transmitter":idtransmitter,"Receiver":idreceiver,"Message":msg,}
+                    var message={"Type":"typing","Transmitter":idtransmitter,"Receiver":idreceiver,"Message":msg,}
                     session.publish("chat/typing/"+idreceiver,message );
                     if (event.keyCode == 13) {
-
-
-
-                        session.publish("chat/message/"+idreceiver,message );
-                        $("#content-msg").val('');
-                    }
+                        if ($.trim(msg.replace(/(\r\n|\n|\r)/gm,""))!= "") {
+                            var message = {
+                                "Type": "message",
+                                "Transmitter": idtransmitter,
+                                "Receiver": idreceiver,
+                                "Message": msg,
+                            }
+                            session.publish("chat/message/" + idreceiver, message);
+                            $("#content-msg").val('');
+                            var frameTrans="<li class='left clearfix admin_chat'><span class='chat-img1 pull-left'><img src='https://lh6.googleusercontent.com/-y-MY2satK-E/AAAAAAAAAAI/AAAAAAAAAJU/ER_hFddBheQ/photo.jpg' alt='User Avatar' class='img-circle'>";
+                            frameTrans=frameTrans+"</span><div class='chat-body1 clearfix'><p style='margin-left: 50px'>"+msg+"</p>";
+                            frameTrans=frameTrans+"<div class='chat_time pull-right'></div></div></li>";
+                            $("#result").append(frameTrans);
+                        }
+                        }
                 });
-
-             //
-
 
             });
         })
